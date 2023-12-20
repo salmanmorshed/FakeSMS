@@ -14,7 +14,7 @@ package:
 	    --name FakeSMS \
 	    --paths venv/lib/python3.11/site-packages \
 	    --hidden-import=tortoise.backends.sqlite \
-	    --add-data="/home/salman/Projects/lawtracer/FakeSMS/build/frontend/index.html:./build/frontend" \
+	    --add-data="./build/frontend/index.html:./build/frontend" \
 	    --onefile \
 	    entry.py
 
