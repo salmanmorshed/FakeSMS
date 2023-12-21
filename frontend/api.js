@@ -3,7 +3,7 @@ export function getBackendHost() {
 }
 
 export async function fetchConversationPreviews(identity) {
-    let response = await fetch(`//${getBackendHost()}/api/${identity}/previews`);
+    const response = await fetch(`//${getBackendHost()}/api/${identity}/previews`);
     return await response.json();
 }
 
@@ -13,12 +13,12 @@ export async function deleteConversation(identity, phoneNumber) {
 }
 
 export async function fetchMessages(identity, phoneNumber) {
-    let response = await fetch(`//${getBackendHost()}/api/${identity}/messages/${phoneNumber}`);
+    const response = await fetch(`//${getBackendHost()}/api/${identity}/messages/${phoneNumber}`);
     return await response.json();
 }
 
 export async function createMessage(identity, phoneNumber, message) {
-    let response = await fetch(`//${getBackendHost()}/api/${identity}/send`, {
+    const response = await fetch(`//${getBackendHost()}/api/${identity}/send`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ recipient: phoneNumber, message }),
@@ -27,7 +27,7 @@ export async function createMessage(identity, phoneNumber, message) {
 }
 
 export async function fetchRegisteredNumbers() {
-    let response = await fetch(`//${getBackendHost()}/api/config/registered_numbers`);
+    const response = await fetch(`//${getBackendHost()}/api/config/registered_numbers`);
     return await response.json();
 }
 
@@ -41,7 +41,7 @@ export async function updateRegisteredNumber(numbers) {
 }
 
 export async function fetchWebhookURL() {
-    let response = await fetch(`//${getBackendHost()}/api/config/webhook_url`);
+    const response = await fetch(`//${getBackendHost()}/api/config/webhook_url`);
     return await response.json();
 }
 

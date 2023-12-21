@@ -1,8 +1,8 @@
 import React from "react";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Home from "./Home.jsx";
 import Previews from "./Previews.jsx";
 import Thread from "./Thread.jsx";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 export default function App() {
     return (

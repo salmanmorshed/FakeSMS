@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import useWebSocket from "react-use-websocket";
 import { getBackendHost, fetchConversationPreviews } from "../api.js";
 import { formatDateTime } from "../utils.js";
-import { useNavigate, useParams } from "react-router-dom";
 
 export default function Previews() {
     const { identity } = useParams();
@@ -20,15 +20,16 @@ export default function Previews() {
     useWebSocket(`ws://${getBackendHost()}/ws/${identity}`, {
         shouldReconnect: () => true,
         onOpen() {
-            console.log("WS opened");
+            if (import.meta.env.DEV) console.log("WS opened");
             setWsActive(true);
         },
         onClose() {
-            console.log("WS closed");
+            if (import.meta.env.DEV) console.log("WS closed");
             setWsActive(false);
         },
         onMessage(event) {
-            console.log("WS message", JSON.parse(event.data));
+            const wsMessage = JSON.parse(event.data);
+            if (import.meta.env.DEV) console.log("WS message", wsMessage);
             setUpdateCount(updateCount => updateCount + 1);
         },
     });
@@ -103,7 +104,7 @@ function Preview({ identity, preview }) {
 
 function Create({ identity, onClose }) {
     const navigate = useNavigate();
-    let [newTarget, setNewTarget] = useState("");
+    const [newTarget, setNewTarget] = useState("");
 
     function createNewHandler(event) {
         event.preventDefault();

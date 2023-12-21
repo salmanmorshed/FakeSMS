@@ -1,8 +1,8 @@
 import { useEffect, useState, useRef } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import useWebSocket from "react-use-websocket";
 import { getBackendHost, fetchMessages, createMessage, deleteConversation } from "../api.js";
 import { formatDateTime, linkifyTextNode } from "../utils.js";
-import { useNavigate, useParams } from "react-router-dom";
 
 export default function Thread() {
     const { identity, target } = useParams();
@@ -23,21 +23,21 @@ export default function Thread() {
     const { sendJsonMessage } = useWebSocket(`ws://${getBackendHost()}/ws/${identity}`, {
         shouldReconnect: () => true,
         onOpen() {
-            console.log("WS opened");
+            if (import.meta.env.DEV) console.log("WS opened");
             setWsActive(true);
         },
         onClose() {
-            console.log("WS closed");
+            if (import.meta.env.DEV) console.log("WS closed");
             setWsActive(false);
         },
         onMessage(event) {
             const wsMessage = JSON.parse(event.data);
-            console.log("WS message", wsMessage);
+            if (import.meta.env.DEV) console.log("WS message", wsMessage);
             if (wsMessage["type"] === "event:message_received" || wsMessage["type"] === "event:message_sent") {
                 setMessages(messages => [...messages, wsMessage["payload"]]);
             }
             if (wsMessage["type"] === "event:deleted_conversation" && wsMessage["phone_number"] === target) {
-                console.log(null);
+                navigate(`/${identity}`);
             }
         },
     });
@@ -56,16 +56,16 @@ export default function Thread() {
 
     async function deleteThreadHandler(event) {
         event.preventDefault();
-        if (!confirm("Are you sure?")) return;
-        if (wsActive) {
-            sendJsonMessage({
-                type: "action:delete_conversation",
-                payload: { target: target },
-            });
-        } else {
-            await deleteConversation(identity, target);
+        if (confirm("Are you sure?")) {
+            if (wsActive) {
+                sendJsonMessage({
+                    type: "action:delete_conversation",
+                    payload: { target: target },
+                });
+            } else {
+                if (await deleteConversation(identity, target)) navigate(`/${identity}`);
+            }
         }
-        setCurrentNumber(null);
     }
 
     return (
@@ -149,7 +149,7 @@ function Sender({ sendHandler }) {
         event.preventDefault();
         if (newMessage) {
             await sendHandler(newMessage);
-            setNewMessage(_ => "");
+            setNewMessage("");
         }
     }
 

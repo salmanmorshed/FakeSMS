@@ -24,7 +24,7 @@ export default function Home() {
                     <input
                         className="w-full rounded px-3 py-3 text-lg border border-gray-400 mt-1"
                         id="identityInput"
-                        type="text"
+                        type="tel"
                         name="identity"
                         value={number}
                         onChange={e => setNumber(e.target.value)}
