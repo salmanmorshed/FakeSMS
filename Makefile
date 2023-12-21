@@ -1,15 +1,14 @@
 setup-backend:
 	python -m venv venv
-	. venv/bin/activate
-	python -m pip install -U pip pip-tools
-	pip-sync
+	./venv/bin/pip install -U pip pip-tools
+	./venv/bin/pip-sync
 
 setup-frontend:
 	npm install
 	npm run build
 
 package:
-	pyinstaller \
+	./venv/bin/pyinstaller \
 	    -y --clean \
 	    --name FakeSMS \
 	    --paths venv/lib/python3.11/site-packages \
