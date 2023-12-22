@@ -2,7 +2,8 @@ import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import useWebSocket from "react-use-websocket";
 import { getBackendHost, fetchMessages, createMessage, deleteConversation } from "../api.js";
-import { formatDateTime, linkifyTextNode } from "../utils.js";
+import { formatDateTime } from "../utils.js";
+import Linkify from 'linkify-react';
 
 export default function Thread() {
     const { identity, target } = useParams();
@@ -115,7 +116,9 @@ function Incoming({ message }) {
             <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300"></div>
             <div>
                 <div className="bg-gray-200 p-3 rounded-r-lg rounded-bl-lg">
-                    <p className="text-sm incomingMessageContainer">{linkifyTextNode(message["message"])}</p>
+                    <p className="text-sm incomingMessageContainer">
+                        <Linkify options={{target: "_blank"}}>{message["message"]}</Linkify>
+                    </p>
                 </div>
                 <span className="text-xs text-gray-500 leading-none">{formatDateTime(message["sent_at"])}</span>
             </div>
@@ -128,7 +131,9 @@ function Outgoing({ message }) {
         <div className="flex w-full mt-2 space-x-3 max-w-xs ml-auto justify-end">
             <div>
                 <div className="bg-blue-600 text-white p-3 rounded-l-lg rounded-br-lg">
-                    <p className="text-sm outgoingMessageContainer">{linkifyTextNode(message["message"])}</p>
+                    <p className="text-sm outgoingMessageContainer">
+                        <Linkify options={{target: "_blank"}}>{message["message"]}</Linkify>
+                    </p>
                 </div>
                 <span className="text-xs text-gray-500 leading-none">
                     {formatDateTime(message["sent_at"])}
