@@ -37,5 +37,15 @@ def save_config(data: ConfigDict):
         tomlkit.dump(doc, fp)
 
 
-def get_database_uri() -> str:
-    return f"sqlite://{DATABASE_FILE}"
+def get_tortoise_config() -> dict[str, any]:
+    return {
+        "connections": {
+            "default": f"sqlite://{DATABASE_FILE}",
+        },
+        "apps": {
+            "models": {
+                "models": ["backend.models"],
+                "default_connection": "default",
+            }
+        },
+    }

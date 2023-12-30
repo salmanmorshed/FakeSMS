@@ -9,4 +9,6 @@ except AttributeError:
     pass
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8104)
+    host = os.getenv("FAKESMS_HOST", "127.0.0.1")
+    port = os.getenv("FAKESMS_PORT", "8104")
+    uvicorn.run(app, host=host, port=int(port))

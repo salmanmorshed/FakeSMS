@@ -1,12 +1,12 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import useWebSocket from "react-use-websocket";
-import { getBackendHost, fetchMessages, createMessage, deleteConversation } from "../api.js";
-import { formatDateTime } from "../utils.js";
-import Linkify from 'linkify-react';
+import { fetchMessages, createMessage, deleteConversation } from "../api.js";
+import { formatDateTime, getHost } from "../utils.js";
+import Linkify from "linkify-react";
 
 export default function Thread() {
-    const { identity, target } = useParams();
+    const { inboxId, targetId } = useParams();
     const navigate = useNavigate();
 
     const [messages, setMessages] = useState([]);
@@ -14,14 +14,14 @@ export default function Thread() {
     const bottomRef = useRef(null);
 
     useEffect(() => {
-        fetchMessages(identity, target).then(data => setMessages(data));
+        fetchMessages(inboxId, targetId).then(data => setMessages(data));
     }, []);
 
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
     }, [messages]);
 
-    const { sendJsonMessage } = useWebSocket(`ws://${getBackendHost()}/ws/${identity}`, {
+    const { sendJsonMessage } = useWebSocket(`ws://${getHost()}/ws/${inboxId}`, {
         shouldReconnect: () => true,
         onOpen() {
             if (import.meta.env.DEV) console.log("WS opened");
@@ -34,11 +34,15 @@ export default function Thread() {
         onMessage(event) {
             const wsMessage = JSON.parse(event.data);
             if (import.meta.env.DEV) console.log("WS message", wsMessage);
-            if (wsMessage["type"] === "event:message_received" || wsMessage["type"] === "event:message_sent") {
+            if (wsMessage["type"] === "event:message_sent") {
                 setMessages(messages => [...messages, wsMessage["payload"]]);
             }
-            if (wsMessage["type"] === "event:deleted_conversation" && wsMessage["phone_number"] === target) {
-                navigate(`/${identity}`);
+            if (wsMessage["type"] === "event:message_received") {
+                if (wsMessage["payload"]["sender"] !== wsMessage["payload"]["recipient"])
+                    setMessages(messages => [...messages, wsMessage["payload"]]);
+            }
+            if (wsMessage["type"] === "event:deleted_conversation" && wsMessage["phone_number"] === targetId) {
+                navigate(`/${inboxId}`);
             }
         },
     });
@@ -47,10 +51,10 @@ export default function Thread() {
         if (wsActive) {
             sendJsonMessage({
                 type: "action:send_message",
-                payload: { recipient: target, message },
+                payload: { recipient: targetId, message },
             });
         } else {
-            const newMessage = await createMessage(identity, target, message);
+            const newMessage = await createMessage(inboxId, targetId, message);
             if (newMessage) setMessages(messages => [...messages, newMessage]);
         }
     }
@@ -61,10 +65,10 @@ export default function Thread() {
             if (wsActive) {
                 sendJsonMessage({
                     type: "action:delete_conversation",
-                    payload: { target: target },
+                    payload: { target: targetId },
                 });
             } else {
-                if (await deleteConversation(identity, target)) navigate(`/${identity}`);
+                if (await deleteConversation(inboxId, targetId)) navigate(`/${inboxId}`);
             }
         }
     }
@@ -74,11 +78,11 @@ export default function Thread() {
             <div className="flex bg-gray-300 p-4 justify-between">
                 <button
                     className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
-                    onClick={() => navigate(`/${identity}`)}
+                    onClick={() => navigate(`/${inboxId}`)}
                 >
                     &lt; Back
                 </button>
-                <h1 className="text-xl py-1 font-bold">{target}</h1>
+                <h1 className="text-xl py-1 font-bold">{targetId}</h1>
                 <button
                     className="border border-red-500 hover:bg-red-500 hover:text-white text-red-500 py-2 px-4 rounded"
                     onClick={deleteThreadHandler}
@@ -95,7 +99,7 @@ export default function Thread() {
 
             <div className="flex flex-col flex-grow h-0 p-4 overflow-auto">
                 {messages.map((message, i) =>
-                    message["sender"] === identity ? (
+                    message["sender"] === inboxId ? (
                         <Outgoing message={message} key={i} />
                     ) : (
                         <Incoming message={message} key={i} />
@@ -117,7 +121,7 @@ function Incoming({ message }) {
             <div>
                 <div className="bg-gray-200 p-3 rounded-r-lg rounded-bl-lg">
                     <p className="text-sm incomingMessageContainer">
-                        <Linkify options={{target: "_blank"}}>{message["message"]}</Linkify>
+                        <Linkify options={{ target: "_blank" }}>{message["message"]}</Linkify>
                     </p>
                 </div>
                 <span className="text-xs text-gray-500 leading-none">{formatDateTime(message["sent_at"])}</span>
@@ -132,7 +136,7 @@ function Outgoing({ message }) {
             <div>
                 <div className="bg-blue-600 text-white p-3 rounded-l-lg rounded-br-lg">
                     <p className="text-sm outgoingMessageContainer">
-                        <Linkify options={{target: "_blank"}}>{message["message"]}</Linkify>
+                        <Linkify options={{ target: "_blank" }}>{message["message"]}</Linkify>
                     </p>
                 </div>
                 <span className="text-xs text-gray-500 leading-none">

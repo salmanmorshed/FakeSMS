@@ -1,32 +1,39 @@
 import { useEffect, useState } from "react";
-import { fetchRegisteredNumbers, updateRegisteredNumber, fetchWebhookURL, updateWebhookURL } from "../api.js";
+import { fetchConfig, partialUpdateConfig } from "../api.js";
 
 export default function Settings() {
     const [numbers, setNumbers] = useState([]);
     const [webhook, setWebhook] = useState("");
 
     useEffect(() => {
-        fetchRegisteredNumbers().then(data => setNumbers(data));
-        fetchWebhookURL().then(data => setWebhook(data));
+        fetchConfig().then(config => {
+            setWebhook(config["webhook_url"]);
+            setNumbers(config["registered_numbers"]);
+        });
     }, []);
+
+    async function webhookFormSubmitHandler(event) {
+        event.preventDefault();
+        if (confirm("Are you sure?")) {
+            const updatedConfig = await partialUpdateConfig({ webhook_url: webhook });
+            setWebhook(updatedConfig.webhook_url);
+        }
+    }
 
     async function addNumberHandler() {
         const num = prompt("Enter phone number");
         if (num) {
-            setNumbers(await updateRegisteredNumber([...numbers, num]));
+            const updatedConfig = await partialUpdateConfig({ registered_numbers: [...numbers, num] });
+            setNumbers(updatedConfig.registered_numbers);
         }
     }
 
     async function deleteNumberHandler(targetValue) {
         if (confirm("Are you sure?")) {
-            setNumbers(await updateRegisteredNumber(numbers.filter(num => num !== targetValue)));
-        }
-    }
-
-    async function webhookFormSubmitHandler(event) {
-        event.preventDefault();
-        if (confirm("Are you sure?")) {
-            setWebhook(await updateWebhookURL(webhook));
+            const updatedConfig = await partialUpdateConfig({
+                registered_numbers: numbers.filter(num => num !== targetValue),
+            });
+            setNumbers(updatedConfig.registered_numbers);
         }
     }
 

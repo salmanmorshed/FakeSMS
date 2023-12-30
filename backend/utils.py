@@ -6,7 +6,7 @@ from uuid import UUID
 
 import httpx
 
-from .models import MessagePydantic
+from .models import MessagePydantic, Status
 
 
 def custom_serializer(obj) -> str:
@@ -18,9 +18,9 @@ def custom_serializer(obj) -> str:
 
 
 async def forward_message_to_webhook(*, url: str, message_pydantic: MessagePydantic) -> bool:
-    message_pydantic.status = "received"
+    message_pydantic.status = Status.received
     try:
-        data_dict = json.loads(json.dumps(message_pydantic.dict(), default=custom_serializer))
+        data_dict = json.loads(json.dumps(message_pydantic.model_dump(), default=custom_serializer))
     except (TypeError, ValueError):
         return False
     try:
@@ -35,8 +35,8 @@ async def forward_message_to_webhook(*, url: str, message_pydantic: MessagePydan
 async def callback_with_updated_status(*, url: str, message_pydantic: MessagePydantic):
     await asyncio.sleep(random.randrange(1, 10))
 
-    message_pydantic.status = "sent"
-    data_dict = json.loads(json.dumps(message_pydantic.dict(), default=custom_serializer))
+    message_pydantic.status = Status.sent
+    data_dict = json.loads(json.dumps(message_pydantic.model_dump(), default=custom_serializer))
 
     try:
         async with httpx.AsyncClient() as client:

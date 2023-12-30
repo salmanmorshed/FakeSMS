@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import useWebSocket from "react-use-websocket";
-import { getBackendHost, fetchConversationPreviews } from "../api.js";
-import { formatDateTime } from "../utils.js";
+import { fetchConversationPreviews } from "../api.js";
+import { formatDateTime, getHost } from "../utils.js";
 
 export default function Previews() {
-    const { identity } = useParams();
+    const { inboxId } = useParams();
     const navigate = useNavigate();
 
     const [contacts, setContacts] = useState([]);
@@ -14,10 +14,10 @@ export default function Previews() {
     const [showCreate, setShowCreate] = useState(false);
 
     useEffect(() => {
-        fetchConversationPreviews(identity).then(data => setContacts(data));
+        fetchConversationPreviews(inboxId).then(data => setContacts(data));
     }, [updateCount]);
 
-    useWebSocket(`ws://${getBackendHost()}/ws/${identity}`, {
+    useWebSocket(`ws://${getHost()}/ws/${inboxId}`, {
         shouldReconnect: () => true,
         onOpen() {
             if (import.meta.env.DEV) console.log("WS opened");
@@ -37,7 +37,7 @@ export default function Previews() {
     return (
         <>
             <div className="flex bg-gray-300 p-4 justify-between">
-                <h1 className="text-xl py-1">Inbox of {identity}</h1>
+                <h1 className="text-xl py-1">Inbox of {inboxId}</h1>
                 <button
                     className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded"
                     onClick={() => navigate("/")}
@@ -53,12 +53,12 @@ export default function Previews() {
             )}
 
             {contacts.map((contact, i) => (
-                <Preview identity={identity} preview={contact} key={i} />
+                <Preview inboxId={inboxId} preview={contact} key={i} />
             ))}
 
             {showCreate ? (
                 <div className="flex justify-center mt-5">
-                    <Create identity={identity} onClose={() => setShowCreate(false)} />
+                    <Create inboxId={inboxId} onClose={() => setShowCreate(false)} />
                 </div>
             ) : (
                 <div className="flex justify-center mt-5">
@@ -74,14 +74,14 @@ export default function Previews() {
     );
 }
 
-function Preview({ identity, preview }) {
+function Preview({ inboxId, preview }) {
     const navigate = useNavigate();
 
     return (
         <>
             <a
                 className="px-3 flex items-center bg-grey-light hover:bg-gray-100 cursor-pointer"
-                onClick={() => navigate(`/${identity}/${preview["phone_number"]}`)}
+                onClick={() => navigate(`/${inboxId}/${preview["phone_number"]}`)}
             >
                 <div>
                     {preview["direction"] === "incoming" ? (
@@ -102,13 +102,13 @@ function Preview({ identity, preview }) {
     );
 }
 
-function Create({ identity, onClose }) {
+function Create({ inboxId, onClose }) {
     const navigate = useNavigate();
     const [newTarget, setNewTarget] = useState("");
 
     function createNewHandler(event) {
         event.preventDefault();
-        navigate(`/${identity}/${newTarget}`);
+        navigate(`/${inboxId}/${newTarget}`);
     }
 
     return (

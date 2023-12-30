@@ -3,12 +3,12 @@ import { useNavigate } from "react-router-dom";
 import Settings from "./Settings.jsx";
 
 export default function Home() {
-    const [number, setNumber] = useState("");
+    const [inboxId, setInboxId] = useState("");
     const navigate = useNavigate();
 
-    async function setIdentityFormSubmitHandler(event) {
+    async function setInboxIdFormSubmitHandler(event) {
         event.preventDefault();
-        navigate(`/${number}`);
+        navigate(`/${inboxId}`);
     }
 
     return (
@@ -16,18 +16,18 @@ export default function Home() {
             <div className="flex bg-gray-300 p-4 justify-between">
                 <h1 className="text-xl py-1">FakeSMS</h1>
             </div>
-            <form onSubmit={setIdentityFormSubmitHandler} className="px-5">
+            <form onSubmit={setInboxIdFormSubmitHandler} className="px-5">
                 <div className="mt-5">
-                    <label htmlFor="identityInput" className="block text-sm font-medium leading-6 text-gray-900 ">
+                    <label htmlFor="inboxIdInput" className="block text-sm font-medium leading-6 text-gray-900 ">
                         Phone number of inbox
                     </label>
                     <input
                         className="w-full rounded px-3 py-3 text-lg border border-gray-400 mt-1"
-                        id="identityInput"
+                        id="inboxIdInput"
                         type="tel"
-                        name="identity"
-                        value={number}
-                        onChange={e => setNumber(e.target.value)}
+                        name="inboxId"
+                        value={inboxId}
+                        onChange={e => setInboxId(e.target.value)}
                         placeholder="Phone number"
                         required
                     />

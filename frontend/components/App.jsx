@@ -12,8 +12,8 @@ export default function App() {
                     <HashRouter>
                         <Routes>
                             <Route path="/" element={<Home />}></Route>
-                            <Route path="/:identity" element={<Previews />}></Route>
-                            <Route path="/:identity/:target" element={<Thread />}></Route>
+                            <Route path="/:inboxId" element={<Previews />}></Route>
+                            <Route path="/:inboxId/:targetId" element={<Thread />}></Route>
                         </Routes>
                     </HashRouter>
                 </div>
